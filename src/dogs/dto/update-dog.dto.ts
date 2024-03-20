@@ -1,21 +1,5 @@
-import {
-  IsIn,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  MinLength,
-} from 'class-validator';
+import { IsIn, IsOptional, IsString } from 'class-validator';
 import { DogSize, DogStatus } from '../dog.entity';
-
-export class CreateDogDto {
-  @IsString()
-  @IsNotEmpty()
-  @MinLength(4)
-  race: string;
-  size: DogSize;
-  age: string;
-  expectancy: string;
-}
 
 export class UpdateDogDto {
   @IsString()

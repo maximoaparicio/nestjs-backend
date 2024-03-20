@@ -8,30 +8,32 @@ import {
   Post,
 } from '@nestjs/common';
 import { DogsService } from './dogs.service';
-import { CreateDogDto, UpdateDogDto } from './dto/dog.dto';
+import { CreateDogDto } from './dto/create-dog.dto';
+import { UpdateDogDto } from './dto/update-dog.dto';
+import { Dog } from './dog.entity';
 
 @Controller('dogs')
 export class DogsController {
-  constructor(private dogsService: DogsService) {}
+  constructor(private readonly dogsService: DogsService) {}
 
   @Get()
-  getAllDogs() {
-    return this.dogsService.getAllDogs();
+  getDogs(): Promise<Dog[]> {
+    return this.dogsService.getDogs();
+  }
+
+  @Get(':id')
+  getDog(@Param('id') id: string): Promise<Dog> {
+    return this.dogsService.getDogById(id);
   }
 
   @Post()
   createDog(@Body() newDog: CreateDogDto) {
-    return this.dogsService.createDog(
-      newDog.race,
-      newDog.size,
-      newDog.age,
-      newDog.expectancy,
-    );
+    return this.dogsService.createDog(newDog);
   }
 
   @Delete(':id')
   deleteDog(@Param('id') id: string) {
-    this.dogsService.deleteDog(id);
+    return this.dogsService.deleteDog(id);
   }
 
   @Patch(':id')

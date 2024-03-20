@@ -1,52 +1,59 @@
-import { Injectable } from '@nestjs/common';
-import { Dog, DogSize, DogStatus } from './dog.entity';
-import { v4 } from 'uuid';
-import { UpdateDogDto } from './dto/dog.dto';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Dog } from './dog.entity';
+import { CreateDogDto } from './dto/create-dog.dto';
+import { UpdateDogDto } from './dto/update-dog.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class DogsService {
-  // simulate a database
-  private dogs: Dog[] = [
-    {
-      id: '1',
-      race: 'Unknown',
-      size: DogSize.MEDIUM,
-      age: '5 years old',
-      expectancy: '9 years mostly',
-      status: DogStatus.AVAILABLE,
-    },
-  ];
+  constructor(@InjectRepository(Dog) private dogRepository: Repository<Dog>) {}
 
-  getAllDogs() {
-    return this.dogs;
+  getDogs() {
+    return this.dogRepository.find();
   }
 
-  createDog(race: string, size: DogSize, age: string, expectancy: string) {
-    const dog = {
-      id: v4(),
-      race,
-      size,
-      age,
-      expectancy,
-      status: DogStatus.AVAILABLE,
-    };
-    this.dogs.push(dog);
-
-    return dog;
+  async createDog(dog: CreateDogDto) {
+    const newDog = this.dogRepository.create(dog);
+    return this.dogRepository.save(newDog);
   }
 
-  deleteDog(id: string) {
-    this.dogs = this.dogs.filter((dog) => dog.id !== id);
+  async deleteDog(id: string) {
+    const result = await this.dogRepository.delete({ id });
+
+    if (result.affected === 0) {
+      throw new HttpException('Dog not found', HttpStatus.NOT_FOUND);
+    }
+
+    return result;
   }
 
-  getDogById(id: string): Dog {
-    return this.dogs.find((dog) => dog.id === id);
+  async getDogById(id: string) {
+    const dogFound = await this.dogRepository.findOne({
+      where: {
+        id,
+      },
+    });
+
+    if (!dogFound) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+
+    return dogFound;
   }
 
-  updateDog(id: string, updatedFields: UpdateDogDto): Dog {
-    const dog = this.getDogById(id);
-    const newDog = Object.assign(dog, updatedFields);
-    this.dogs = this.dogs.map((dog) => (dog.id === id ? newDog : dog));
-    return newDog;
+  async updateDog(id: string, dog: UpdateDogDto) {
+    const dogFound = await this.dogRepository.findOne({
+      where: {
+        id,
+      },
+    });
+
+    if (!dogFound) {
+      throw new HttpException('Dog not found', HttpStatus.NOT_FOUND);
+    }
+
+    const updatedDog = Object.assign(dogFound, dog);
+    return this.dogRepository.save(updatedDog);
   }
 }

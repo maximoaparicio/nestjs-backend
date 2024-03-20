@@ -1,3 +1,5 @@
+import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+
 export enum DogStatus {
   ON_RECOVER = 'ON RECOVER',
   AVAILABLE = 'AVAILABLE TO ADOPT',
@@ -10,11 +12,23 @@ export enum DogSize {
   BIG = 'Big',
 }
 
+@Entity({ name: 'dogs' })
 export class Dog {
+  @PrimaryGeneratedColumn('uuid', { name: 'dog_id' })
   id: string;
+
+  @Column()
   race: string;
+
+  @Column()
   size: DogSize;
+
+  @Column()
   age: string;
+
+  @Column()
   expectancy: string;
+
+  @Column({ default: 'AVAILABLE TO ADOPT' })
   status: DogStatus;
 }
